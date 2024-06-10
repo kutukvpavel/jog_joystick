@@ -4,6 +4,8 @@
 #include "task_handles.h"
 #include "interop.h"
 #include "i2c_sync.h"
+#include "axis.h"
+#include "cmd_queue.h"
 
 #include "../USB_DEVICE/App/usb_device.h"
 #include "../Core/Inc/iwdg.h"
@@ -80,46 +82,51 @@ enum class led_states
     COMMUNICATION,
     INIT
 };
-enum class states : uint16_t
-{
-    init,
-    manual,
-    automatic,
-    emergency,
-    lamp_test
-};
 void supervize_led(led_states s);
 
 void user_main(wdt::task_t* pwdt)
 {
-    static const char* state_names[] = {
-        "INIT",
-        "MANUAL",
-        "AUTO",
-        "EMERGENCY",
-        "LAMP_TEST"
-    };
     static led_states led = led_states::INIT;
-    static states state = states::init;
-    static states prev_state = states::init;
-    static_assert(array_size(state_names) >= (static_cast<uint16_t>(states::lamp_test) + 1));
+    static axis::state prev_states[TOTAL_AXES] = { };
 
     /***
      * The following stuff is handled in separate tasks:
      *  debug CLI
      *  STM32 ADC reading
-     *  SR IO sync
-     *  Coprocessor poll
-     *  MAX6675 poll
      *  Display update
-     *  Modbus requests
-     *  Modbus buffer sync
-     * 
+     *  FluidNC command queue
+     *
      * The following remains for the main task to handle:
      *  Status LED
-     *  Manual pump speed update
-     *  State machine
-    */
+     *  Digital input poll
+     *  State machine and command issuing
+     */
+
+    for (size_t i = 0; i < static_cast<size_t>(axis::types::LEN); i++)
+    {
+        auto a = static_cast<axis::types>(i);
+        auto s = axis::poll(a);
+
+        if (s.enabled != prev_states[i].enabled)
+        {
+            cmd_queue::enqueue(a, &s);
+        }
+        else
+        {
+            if ((s.direction != prev_states[i].direction) && s.enabled)
+            {
+                static axis::state ss;
+                
+                ss = s;
+                ss.enabled = false;
+                cmd_queue::enqueue(a, &ss);
+                cmd_queue::enqueue(a, &s);
+            }
+        }
+
+        prev_states[i] = s;
+    }
+    
 }
 
 void supervize_led(led_states s)
@@ -186,3 +193,4 @@ void supervize_led(led_states s)
         break;
     }
 }
+

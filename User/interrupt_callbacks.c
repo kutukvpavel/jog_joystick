@@ -3,6 +3,7 @@
 #include "ushell/inc/sys_command_line.h"
 #include "task_handles.h"
 #include "i2c_sync.h"
+#include "cmd_queue.h"
 
 static void (*uart_dbg_rx_callback)(UART_HandleTypeDef*) = NULL;
 static void (*uart_dbg_tx_callback)(UART_HandleTypeDef*) = NULL;
@@ -21,6 +22,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	cli_uart_rxcplt_callback(huart);
+	cmd_queue_uart_rx_callback(huart);
 	if (uart_dbg_rx_callback != NULL) uart_dbg_rx_callback(huart);
 }
 

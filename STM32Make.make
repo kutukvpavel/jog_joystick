@@ -102,8 +102,10 @@ User/ushell/src/sys_queue.c
 CPP_SOURCES = \
 User/a_io.cpp \
 User/average/average.cpp \
-User/d_io.cpp \
+User/axis.cpp \
+User/cmd_queue.cpp \
 User/dbg_shell.cpp \
+User/display.cpp \
 User/i2c_sync.cpp \
 User/interop.cpp \
 User/user.cpp \

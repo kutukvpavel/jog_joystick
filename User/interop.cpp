@@ -12,7 +12,7 @@ namespace interop
 
     void init()
     {
-        queue = xQueueCreateStatic(16, ITEM_SIZE, storage, &buffer);
+        queue = xQueueCreateStatic(QUEUE_LEN, ITEM_SIZE, storage, &buffer);
         assert_param(queue);
     }
 

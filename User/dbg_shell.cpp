@@ -94,7 +94,7 @@ void init()
 {
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-    CLI_INIT(&huart2);
+    CLI_INIT(&huart3);
 
     CLI_ADD_CMD("info", "Get device info", &cli_commands::info);
 
