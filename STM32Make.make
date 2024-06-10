@@ -37,10 +37,12 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/adc.c \
+Core/Src/crc.c \
 Core/Src/dma.c \
 Core/Src/freertos.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
+Core/Src/iwdg.c \
 Core/Src/main.c \
 Core/Src/stm32f1xx_hal_msp.c \
 Core/Src/stm32f1xx_hal_timebase_tim.c \
@@ -48,11 +50,11 @@ Core/Src/stm32f1xx_it.c \
 Core/Src/system_stm32f1xx.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Core/Src/usb.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_crc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
@@ -60,6 +62,7 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_iwdg.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
@@ -68,7 +71,15 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_exti.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_gpio.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_rcc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_utils.c \
+Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
 Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
@@ -78,10 +89,25 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/queue.c \
 Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
 Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c
+Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+USB_DEVICE/App/usb_device.c \
+USB_DEVICE/App/usbd_cdc_if.c \
+USB_DEVICE/App/usbd_desc.c \
+USB_DEVICE/Target/usbd_conf.c \
+User/interrupt_callbacks.c \
+User/ushell/src/sys_command_line.c \
+User/ushell/src/sys_queue.c
 
 
 CPP_SOURCES = \
+User/a_io.cpp \
+User/average/average.cpp \
+User/d_io.cpp \
+User/dbg_shell.cpp \
+User/i2c_sync.cpp \
+User/interop.cpp \
+User/user.cpp \
+User/wdt.cpp
 
 
 # ASM sources
@@ -137,6 +163,7 @@ AS_DEFS =
 C_DEFS =  \
 -DSTM32F103xB \
 -DSTM32_THREAD_SAFE_STRATEGY=4 \
+-DUSE_FULL_LL_DRIVER \
 -DUSE_HAL_DRIVER
 
 
@@ -144,6 +171,7 @@ C_DEFS =  \
 CXX_DEFS =  \
 -DSTM32F103xB \
 -DSTM32_THREAD_SAFE_STRATEGY=4 \
+-DUSE_FULL_LL_DRIVER \
 -DUSE_HAL_DRIVER
 
 
@@ -157,9 +185,16 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
+-IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+-IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \
+-IUSB_DEVICE/App \
+-IUSB_DEVICE/Target \
+-IUser \
+-IUser/average \
+-IUser/ushell/inc
 
 
 
@@ -176,9 +211,9 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += -Wall -fdata-sections -ffunction-sections 
+CFLAGS += -Wall -fdata-sections -ffunction-sections -std=gnu99 
 ASFLAGS += -Wall -fdata-sections -ffunction-sections 
-CXXFLAGS += 
+CXXFLAGS += -std=gnu++11 
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
@@ -191,12 +226,12 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F103C8Tx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lc -lm -lnosys -lstdc++ 
 LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -Wl,--print-memory-usage -specs=nano.specs 
+ADDITIONALLDFLAGS = -Wl,--no-warn-rwx-segment -Wl,--print-memory-usage -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

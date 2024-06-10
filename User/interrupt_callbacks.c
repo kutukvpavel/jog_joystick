@@ -1,7 +1,6 @@
 #include "user.h"
 
-#include "./modbus/MODBUS-LIB/Inc/Modbus.h"
-#include "sys_command_line.h"
+#include "ushell/inc/sys_command_line.h"
 #include "task_handles.h"
 #include "i2c_sync.h"
 
@@ -16,13 +15,11 @@ void uart_install_callbacks(void (*rx)(UART_HandleTypeDef*), void (*tx)(UART_Han
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	modbus_uart_txcplt_callback(huart);
 	cli_uart_txcplt_callback(huart);
 	if (uart_dbg_tx_callback != NULL) uart_dbg_tx_callback(huart);
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	modbus_uart_rxcplt_callback(huart);
 	cli_uart_rxcplt_callback(huart);
 	if (uart_dbg_rx_callback != NULL) uart_dbg_rx_callback(huart);
 }
@@ -42,7 +39,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 //Used for DMA-accelerated i2c work (coprocessor communication)
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	if (hi2c != &hi2c2) return;
+	if (hi2c != &hi2c1) return;
 
 	i2c_dma_handler();
 }

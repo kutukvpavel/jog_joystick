@@ -24,7 +24,7 @@ namespace a_io
         uint16_t vref;
     };
     volatile a_buffer_t buffer[CHANNEL_REPETITION] = { };
-    volatile uint16_t* mappings[in::LEN][CHANNEL_REPETITION] = { MAP(0) };
+    volatile uint16_t* mappings[in::LEN][CHANNEL_REPETITION] = MAP(0);
     struct channel
     {
         average* a;
