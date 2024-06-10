@@ -1,0 +1,6 @@
+[submodule "User/ushell"]
+	path = User/ushell
+	url = https://github.com/kutukvpavel/ushell-stm32.git
+[submodule "User/average"]
+	path = User/average
+	url = https://github.com/kutukvpavel/average_lib.git
