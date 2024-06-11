@@ -38,7 +38,7 @@ void StartDefaultTask(void *argument)
     static TaskHandle_t handle;
 
     HAL_IWDG_Refresh(&hiwdg);
-    LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
+    LL_GPIO_ResetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
     handle = xTaskGetCurrentTaskHandle();
     assert_param(handle);
@@ -66,6 +66,7 @@ void StartDefaultTask(void *argument)
 
     HAL_IWDG_Refresh(&hiwdg);
     vTaskDelay(pdMS_TO_TICKS(100));
+    LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
     pwdt = wdt::register_task(2000, "main");
     last_wake = xTaskGetTickCount();
@@ -151,10 +152,10 @@ void supervize_led(led_states s)
         next_toggle = tick + current_toggle_period;
         break;
     case substates::on:
-        LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
+        LL_GPIO_ResetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
         break;
     default:
-        LL_GPIO_ResetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
+        LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
         break;
     }
 

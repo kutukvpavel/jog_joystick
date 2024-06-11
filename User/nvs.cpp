@@ -101,7 +101,6 @@ namespace nvs
         static_assert(sizeof(storage_t) < (MY_EEPROM_SIZE - MY_NVS_START_ADDRESS));
         static_assert(sizeof(storage_preamble_t) < MY_NVS_PAGE_SIZE);
         HAL_StatusTypeDef ret;
-        DBG("NVS init...");
 
         if ((ret = eeprom_read(MY_NVS_VER_ADDR, reinterpret_cast<uint8_t*>(&preamble), sizeof(preamble))) != HAL_OK) return ret;
         DBG("Detected NVS ver: %u, crc = %0lX", preamble.version, preamble.crc);

@@ -216,8 +216,8 @@ endif
 
 # Add additional flags
 CFLAGS += -Wall -fdata-sections -ffunction-sections -std=gnu99 
-ASFLAGS += -Wall -fdata-sections -ffunction-sections 
-CXXFLAGS += -Wall -fdata-sections -ffunction-sections -fno-exceptions -std=gnu++11 
+ASFLAGS += -Wall -fdata-sections -ffunction-sections -flto 
+CXXFLAGS += -Wall -fdata-sections -ffunction-sections -flto -fno-exceptions -std=gnu++11 
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
@@ -235,7 +235,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -Wl,--no-warn-rwx-segment -Wl,--print-memory-usage -Wl,--strip-debug -specs=nano.specs 
+ADDITIONALLDFLAGS = -Wl,--no-warn-rwx-segment -Wl,--print-memory-usage -Wl,--strip-debug -flto -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

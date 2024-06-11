@@ -45,16 +45,19 @@ cxxFlags:
   - -ffunction-sections
   - -fno-exceptions
   - -std=gnu++11
+  - -flto
 
 assemblyFlags: 
   - -Wall
   - -fdata-sections
   - -ffunction-sections
+  - -flto
 
 linkerFlags: 
   - -Wl,--print-memory-usage
   - -Wl,--no-warn-rwx-segment
   - -Wl,--strip-debug
+  - -flto
 
 
 # libraries to be included. The -l prefix to the library will be automatically added.
