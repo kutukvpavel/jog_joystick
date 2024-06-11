@@ -109,7 +109,6 @@ User/compat_api.cpp \
 User/dbg_shell.cpp \
 User/display.cpp \
 User/i2c_sync.cpp \
-User/interop.cpp \
 User/nvs.cpp \
 User/user.cpp \
 User/wdt.cpp
@@ -219,7 +218,7 @@ endif
 # Add additional flags
 CFLAGS += -Wall -fdata-sections -ffunction-sections -std=gnu99 
 ASFLAGS += -Wall -fdata-sections -ffunction-sections 
-CXXFLAGS += -std=gnu++11 
+CXXFLAGS += -Wall -fdata-sections -ffunction-sections -fno-exceptions -std=gnu++11 
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
@@ -237,7 +236,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -Wl,--no-warn-rwx-segment -Wl,--print-memory-usage -specs=nano.specs 
+ADDITIONALLDFLAGS = -Wl,--no-warn-rwx-segment -Wl,--print-memory-usage -Wl,--strip-debug -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

@@ -40,6 +40,10 @@ cFlags:
   - -std=gnu99
 
 cxxFlags: 
+  - -Wall
+  - -fdata-sections
+  - -ffunction-sections
+  - -fno-exceptions
   - -std=gnu++11
 
 assemblyFlags: 
@@ -50,6 +54,7 @@ assemblyFlags:
 linkerFlags: 
   - -Wl,--print-memory-usage
   - -Wl,--no-warn-rwx-segment
+  - -Wl,--strip-debug
 
 
 # libraries to be included. The -l prefix to the library will be automatically added.

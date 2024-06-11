@@ -6,7 +6,6 @@
 #include "wdt.h"
 #include "i2c_sync.h"
 #include "a_io.h"
-#include "interop.h"
 #include "nvs.h"
 
 static void init();

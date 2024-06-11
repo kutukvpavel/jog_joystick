@@ -2,7 +2,6 @@
 
 #include "wdt.h"
 #include "task_handles.h"
-#include "interop.h"
 #include "i2c_sync.h"
 #include "axis.h"
 #include "cmd_streamer.h"
@@ -24,14 +23,14 @@
 
 static inline void user_main(wdt::task_t* pwdt);
 
-DEFINE_STATIC_TASK(MY_CLI, 512);
-DEFINE_STATIC_TASK(MY_ADC, 256);
-DEFINE_STATIC_TASK(MY_IO, 256);
-DEFINE_STATIC_TASK(MY_DISP, 512);
-DEFINE_STATIC_TASK(MY_WDT, 256);
+DEFINE_STATIC_TASK(MY_CLI, 256);
+DEFINE_STATIC_TASK(MY_ADC, 128);
+DEFINE_STATIC_TASK(MY_IO, 128);
+DEFINE_STATIC_TASK(MY_DISP, 256);
+DEFINE_STATIC_TASK(MY_WDT, 128);
 
 _BEGIN_STD_C
-void StartMainTask(void *argument)
+void StartDefaultTask(void *argument)
 {
     const uint32_t delay = 5;
     static TickType_t last_wake;
@@ -39,10 +38,10 @@ void StartMainTask(void *argument)
     static TaskHandle_t handle;
 
     HAL_IWDG_Refresh(&hiwdg);
+    LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
     handle = xTaskGetCurrentTaskHandle();
     assert_param(handle);
-    interop::init();
 
     START_STATIC_TASK(MY_CLI, 1, handle);
     HAL_IWDG_Refresh(&hiwdg);
@@ -90,7 +89,7 @@ void supervize_led(led_states s);
 
 void user_main(wdt::task_t* pwdt)
 {
-    static led_states led = led_states::INIT;
+    static led_states led = led_states::HEARTBEAT;
 
     /***
      * The following stuff is handled in separate tasks:
@@ -120,6 +119,8 @@ void user_main(wdt::task_t* pwdt)
 
         cmd_streamer::set_axis_state(a, &s);
     }
+
+    supervize_led(led);
 }
 
 void supervize_led(led_states s)
