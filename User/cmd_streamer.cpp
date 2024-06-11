@@ -4,6 +4,7 @@
 #include "wdt.h"
 
 #include "../Core/Inc/usart.h"
+#include "../USB_DEVICE/App/usbd_cdc_if.h"
 
 #include "math.h"
 
@@ -43,14 +44,23 @@ namespace cmd_streamer
 
         HAL_StatusTypeDef validate_response()
         {
-            size_t len = get_available();
-            if (len != (sizeof(ok_response)) - 1) return HAL_ERROR;
+            static char echo_buf[64];
 
-            for (size_t i = 0; i < len; i++)
+            char c;
+            size_t i = 0;
+            size_t len = get_available();
+            assert_param(sizeof(echo_buf) >= len);
+
+            while (c = getc())
             {
-                if (ok_response[i] != getc()) return HAL_ERROR;
+                echo_buf[i++];
             }
-            return HAL_OK;
+            echo_buf[i] = '\n';
+            echo_buf[i + 1] = '\0';
+            CDC_Transmit_FS(reinterpret_cast<uint8_t*>(echo_buf), len + 1);
+
+            if (len != (sizeof(ok_response)) - 1) return HAL_ERROR;
+            return (strncmp(echo_buf, ok_response, len) == 0) ? HAL_OK : HAL_ERROR;
         }
     } // namespace receiver
 
@@ -150,7 +160,9 @@ namespace cmd_streamer
         if (transmit) 
         {
             state = transmitter_state::waiting_for_ack;
-            HAL_UART_Transmit_IT(&huart2, reinterpret_cast<uint8_t*>(buffer), strlen(buffer));
+            size_t len = strlen(buffer);
+            HAL_UART_Transmit(&huart2, reinterpret_cast<uint8_t*>(buffer), len, 10);
+            CDC_Transmit_FS(reinterpret_cast<uint8_t*>(buffer), len);
         }
     }
 

@@ -7,6 +7,7 @@
 #include "i2c_sync.h"
 #include "a_io.h"
 #include "interop.h"
+#include "nvs.h"
 
 static void init();
 
@@ -88,6 +89,38 @@ namespace cli_commands
         return 1;
 #endif
     }
+
+    uint8_t nvs_save(int argc, char** argv)
+    {
+        return nvs::save();
+    }
+    uint8_t nvs_reset(int argc, char** argv)
+    {
+        return nvs::reset();
+    }
+    uint8_t nvs_test(int argc, char** argv)
+    {
+        return nvs::test();
+    }
+    uint8_t nvs_load(int argc, char** argv)
+    {
+        return nvs::load();
+    }
+    uint8_t nvs_dump(int argc, char** argv)
+    {
+        nvs::dump_hex();
+        return 0;
+    }
+    uint8_t nvs_report(int argc, char** argv)
+    {
+        printf(
+            "\tNVS ver: stored = %hu, required = %hu; %s\n",
+            nvs::get_stored_version(),
+            nvs::get_required_version(),
+            nvs::get_version_match() ? "MATCH" : "DEFAULTS USED!"
+        );
+        return 0;
+    }
 } // namespace cli_commands
 
 void init()
@@ -100,4 +133,13 @@ void init()
 
     CLI_ADD_CMD("periph_report", "Report peripheral state", &cli_commands::peripherals_report);
     CLI_ADD_CMD("os_report", "Report FreeRTOS stats", &cli_commands::os_report);
+
+    CLI_ADD_CMD("nvs_save", "Save current non-volatile data into EEPROM", &cli_commands::nvs_save);
+    CLI_ADD_CMD("nvs_load", "Load non-volatile data from EEPROM", &cli_commands::nvs_load);
+    CLI_ADD_CMD("nvs_dump", "Perform EEPROM HEX-dump", &cli_commands::nvs_dump);
+    CLI_ADD_CMD("nvs_reset", "Reset NVS (sets NVS partiton version to 0 [invalid], doesn't actually erase the EEPROM)",
+        &cli_commands::nvs_reset);
+    CLI_ADD_CMD("nvs_test", "Test EEPROM readback, performs sequential number write and read, and does nvs_save afterwards",
+        &cli_commands::nvs_test);
+    CLI_ADD_CMD("nvs_report", "Report NVS contents in human-readable format", &cli_commands::nvs_report);
 }

@@ -194,6 +194,19 @@ namespace nvs
         return res;
     }
 
+    uint8_t get_stored_version()
+    {
+        return preamble.version;
+    }
+    uint8_t get_required_version()
+    {
+        return MY_NVS_VERSION;
+    }
+    bool get_version_match()
+    {
+        return MY_NVS_VERSION == preamble.version;
+    }
+
     float get_rapid_speed(axis::types t)
     {
         return storage.rapid_feed_rate[static_cast<size_t>(t)];
