@@ -23,4 +23,5 @@ namespace axis
     };
 
     state poll(types t);
+    bool get_fast();
 } // namespace axis

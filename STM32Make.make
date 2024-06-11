@@ -100,14 +100,17 @@ User/ushell/src/sys_queue.c
 
 
 CPP_SOURCES = \
+User/LCD/LiquidCrystal_PCF8574.cpp \
 User/a_io.cpp \
 User/average/average.cpp \
 User/axis.cpp \
-User/cmd_queue.cpp \
+User/cmd_streamer.cpp \
+User/compat_api.cpp \
 User/dbg_shell.cpp \
 User/display.cpp \
 User/i2c_sync.cpp \
 User/interop.cpp \
+User/nvs.cpp \
 User/user.cpp \
 User/wdt.cpp
 
@@ -195,6 +198,7 @@ C_INCLUDES =  \
 -IUSB_DEVICE/App \
 -IUSB_DEVICE/Target \
 -IUser \
+-IUser/LCD \
 -IUser/average \
 -IUser/ushell/inc
 

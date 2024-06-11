@@ -5,7 +5,9 @@
 #include "interop.h"
 #include "i2c_sync.h"
 #include "axis.h"
-#include "cmd_queue.h"
+#include "cmd_streamer.h"
+#include "display.h"
+#include "nvs.h"
 
 #include "../USB_DEVICE/App/usb_device.h"
 #include "../Core/Inc/iwdg.h"
@@ -31,7 +33,7 @@ DEFINE_STATIC_TASK(MY_WDT, 256);
 _BEGIN_STD_C
 void StartMainTask(void *argument)
 {
-    const uint32_t delay = 20;
+    const uint32_t delay = 5;
     static TickType_t last_wake;
     static wdt::task_t* pwdt;
     static TaskHandle_t handle;
@@ -50,6 +52,8 @@ void StartMainTask(void *argument)
     DBG("Single-threaded init");
     DBG("I2C Init...");
     if (i2c::init() != HAL_OK) DIE_WITH_CLI("Failed to initialize I2C");
+    DBG("NVS Init...");
+    if (nvs::init() != HAL_OK) DIE_WITH_CLI("Failed to initialize NVS");
     DBG("USB Init...");
     MX_USB_DEVICE_Init();
     HAL_IWDG_Refresh(&hiwdg);
@@ -87,7 +91,6 @@ void supervize_led(led_states s);
 void user_main(wdt::task_t* pwdt)
 {
     static led_states led = led_states::INIT;
-    static axis::state prev_states[TOTAL_AXES] = { };
 
     /***
      * The following stuff is handled in separate tasks:
@@ -102,31 +105,21 @@ void user_main(wdt::task_t* pwdt)
      *  State machine and command issuing
      */
 
+    bool fast = axis::get_fast();
+    display::state jog_state = fast ? display::state::jog_fast : display::state::jog;
+
     for (size_t i = 0; i < static_cast<size_t>(axis::types::LEN); i++)
     {
         auto a = static_cast<axis::types>(i);
         auto s = axis::poll(a);
 
-        if (s.enabled != prev_states[i].enabled)
-        {
-            cmd_queue::enqueue(a, &s);
-        }
-        else
-        {
-            if ((s.direction != prev_states[i].direction) && s.enabled)
-            {
-                static axis::state ss;
-                
-                ss = s;
-                ss.enabled = false;
-                cmd_queue::enqueue(a, &ss);
-                cmd_queue::enqueue(a, &s);
-            }
-        }
+        //Rapid feed override
+        if (fast) s.speed = nvs::get_rapid_speed(a);
 
-        prev_states[i] = s;
+        display::set_axis_state(a, s.enabled ? jog_state : display::state::idle, s.direction, s.speed);
+
+        cmd_streamer::set_axis_state(a, &s);
     }
-    
 }
 
 void supervize_led(led_states s)
