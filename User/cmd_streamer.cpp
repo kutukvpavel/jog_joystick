@@ -89,13 +89,14 @@ namespace cmd_streamer
             .designator = 'A'
         }
     };
-    static SemaphoreHandle_t mutex_handle;
+    static SemaphoreHandle_t mutex_handle = NULL;
+    static StaticSemaphore_t mutex_buffer;
     static transmitter_state state = transmitter_state::ready;
     static uint32_t error_responses = 0;
 
     HAL_StatusTypeDef init()
     {
-        mutex_handle = xSemaphoreCreateMutex();
+        mutex_handle = xSemaphoreCreateMutexStatic(&mutex_buffer);
         assert_param(mutex_handle);
         return receiver::init();
     }

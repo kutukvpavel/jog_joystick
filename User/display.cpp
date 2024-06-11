@@ -18,12 +18,13 @@ namespace display
     static char speed_buffer[line_buffer_length];
     static char state_buffer[line_buffer_length];
     static display_data data[TOTAL_AXES] = { };
-    static SemaphoreHandle_t data_mutex;
+    static SemaphoreHandle_t data_mutex = NULL;
+    static StaticSemaphore_t data_mutex_buffer;
     static LiquidCrystal_PCF8574* lcd = new LiquidCrystal_PCF8574();
 
     void init()
     {
-        data_mutex = xSemaphoreCreateMutex();
+        data_mutex = xSemaphoreCreateMutexStatic(&data_mutex_buffer);
         assert_param(data_mutex);
         lcd->begin(20, 4);
         //Print labels
