@@ -1,4 +1,14 @@
 Warning: works only on "unofficial" 128k-flash devices (linker script tweaked!).
 
-TODO: make LCD-related stuff non-blocking (takes 20mS).
+Joystick DB9 pinout:
+1 = Fast
+2 = X-
+3 = X+
+4 = Y-
+5 = Y+
+6-7 = NC
+8-9 = GND
+
+
+TODO:
 Check command streamer.

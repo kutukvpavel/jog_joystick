@@ -61,13 +61,13 @@ void MX_GPIO_Init(void)
   LL_GPIO_Init(OUT_LED_GPIO_Port, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = IN_X_N_Pin|IN_X_P_Pin|IN_Y_N_Pin|IN_Y_P_Pin
-                          |IN_A_P_Pin|IN_SPIN_N_Pin|IN_SPIN_P_Pin|IN_RES_Pin;
+  GPIO_InitStruct.Pin = IN_A_P_Pin|IN_A_N_Pin|IN_Z_P_Pin|IN_RES_Pin
+                          |IN_Y_N_Pin|IN_X_P_Pin|IN_X_N_Pin|IN_FAST_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = IN_Z_N_Pin|IN_Z_P_Pin|IN_FAST_Pin|IN_A_N_Pin;
+  GPIO_InitStruct.Pin = IN_SPIN_N_Pin|IN_SPIN_P_Pin|IN_Z_N_Pin|IN_Y_P_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 

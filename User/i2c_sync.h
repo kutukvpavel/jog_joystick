@@ -4,7 +4,7 @@
 #include "i2c.h"
 
 _BEGIN_STD_C
-void i2c_dma_handler(void);
+void i2c_event_handler(void);
 _END_STD_C
 
 #ifdef __cplusplus

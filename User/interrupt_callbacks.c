@@ -38,10 +38,16 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	portYIELD_FROM_ISR(woken);
 }
 
-//Used for DMA-accelerated i2c work (coprocessor communication)
+//Used for DMA-accelerated i2c work
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
 	if (hi2c != &hi2c1) return;
 
-	i2c_dma_handler();
+	i2c_event_handler();
+}
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	if (hi2c != &hi2c1) return;
+
+	i2c_event_handler();
 }

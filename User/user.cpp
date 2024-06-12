@@ -48,7 +48,7 @@ void StartDefaultTask(void *argument)
 
     START_STATIC_TASK(MY_CLI, 1, handle);
     HAL_IWDG_Refresh(&hiwdg);
-    START_STATIC_TASK(MY_WDT, 2, handle);
+    START_STATIC_TASK(MY_WDT, 3, handle);
     HAL_IWDG_Refresh(&hiwdg);
 
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) ERR("IWDG reset detected!");
@@ -67,9 +67,9 @@ void StartDefaultTask(void *argument)
     HAL_IWDG_Refresh(&hiwdg);
 
     DBG("Starting tasks. Multithreaded init.");
-    START_STATIC_TASK(MY_ADC, 1, handle);
+    START_STATIC_TASK(MY_ADC, 2, handle);
     HAL_IWDG_Refresh(&hiwdg);
-    START_STATIC_TASK(MY_IO, 1, handle);
+    START_STATIC_TASK(MY_IO, 2, handle);
     HAL_IWDG_Refresh(&hiwdg);
     START_STATIC_TASK(MY_DISP, 1, handle);
 

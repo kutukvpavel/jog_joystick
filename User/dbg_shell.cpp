@@ -7,6 +7,8 @@
 #include "i2c_sync.h"
 #include "a_io.h"
 #include "nvs.h"
+#include "axis.h"
+#include "cmd_streamer.h"
 
 static void init();
 
@@ -33,6 +35,7 @@ _END_STD_C
 namespace cli_commands
 {
     //Common API
+    const char axis_letters[] = { 'X', 'Y', 'Z', 'A' };
 
     //Actual commands
     uint8_t info(int argc, char** argv)
@@ -71,7 +74,6 @@ namespace cli_commands
             &STATIC_TASK_HANDLE(MY_WDT)
         };
 
-        printf("\tMinimum ever free heap = %u\n", xPortGetMinimumEverFreeHeapSize());
         for (size_t i = 0; i < array_size(tasks); i++)
         {
             TaskStatus_t details;
@@ -112,9 +114,6 @@ namespace cli_commands
     }
     uint8_t nvs_report(int argc, char** argv)
     {
-        const char axis_letters[] = { 'X', 'Y', 'Z', 'A' };
-        static_assert(sizeof(axis_letters) == TOTAL_AXES);
-
         printf(
             "\tNVS ver: stored = %hu, required = %hu; %s\n",
             nvs::get_stored_version(),
@@ -129,10 +128,23 @@ namespace cli_commands
         
         return 0;
     }
+    uint8_t hw_report(int argc, char** argv)
+    {
+        puts("\tAxes jog speeds:");
+        for (size_t i = 0; i < TOTAL_AXES; i++)
+        {
+            float s = cmd_streamer::get_axis_jog_speed(static_cast<axis::types>(i));
+            printf("\t\t%c: %f\n", axis_letters[i], s);
+        }
+
+        return 0;
+    }
 } // namespace cli_commands
 
 void init()
 {
+    static_assert(sizeof(cli_commands::axis_letters) == TOTAL_AXES);
+
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     CLI_INIT(&huart3);
@@ -150,4 +162,6 @@ void init()
     CLI_ADD_CMD("nvs_test", "Test EEPROM readback, performs sequential number write and read, and does nvs_save afterwards",
         &cli_commands::nvs_test);
     CLI_ADD_CMD("nvs_report", "Report NVS contents in human-readable format", &cli_commands::nvs_report);
+
+    CLI_ADD_CMD("hw_report", "Report HW state", &cli_commands::hw_report);
 }

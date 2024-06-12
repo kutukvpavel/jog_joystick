@@ -178,6 +178,13 @@ namespace cmd_streamer
         xSemaphoreGive(mutex_handle);
         return HAL_OK;
     }
+
+    float get_axis_jog_speed(axis::types t)
+    {
+        auto a = &data[static_cast<size_t>(t)];
+
+        return a->jog_speed;
+    }
 } // namespace cmd_streamer
 
 _BEGIN_STD_C
@@ -200,9 +207,11 @@ STATIC_TASK_BODY(MY_IO)
             cmd_streamer::stream_next();
             break;
         case cmd_streamer::transmitter_state::waiting_for_ack:
-            while (!ulTaskNotifyTake(pdTRUE, portMAX_DELAY));
-            cmd_streamer::validate_response();
-            last_wake = xTaskGetTickCount();
+            if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(20)) > 0)
+            {
+                cmd_streamer::validate_response();
+            }
+            //last_wake = xTaskGetTickCount();
             break;
         }
         vTaskDelayUntil(&last_wake, delay);

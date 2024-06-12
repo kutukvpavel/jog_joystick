@@ -9,6 +9,8 @@
 namespace cmd_streamer
 {
     HAL_StatusTypeDef set_axis_state(axis::types t, const axis::state *s);
+
+    float get_axis_jog_speed(axis::types t);
 } // namespace cmd_queue
 
 #endif

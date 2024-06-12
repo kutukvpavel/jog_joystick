@@ -20,14 +20,19 @@ namespace i2c
         return mutex_handle ? HAL_OK : HAL_ERROR;
     }
 
-    //Busy-wait
+    //This function blocks on a task notification (no busy wait)
     HAL_StatusTypeDef write_byte(uint16_t dev_addr, uint8_t data)
     {
-        const uint32_t timeout = 500; //ms
+        const uint32_t timeout = 100; //ms
         assert_param(mutex_handle);
 
         ACQUIRE_MUTEX();
-        HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, dev_addr, &data, 1, timeout);
+        HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit_IT(&hi2c1, dev_addr, &data, 1);
+        if (ret == HAL_OK || ret == HAL_BUSY) //In case we've missed a notification last time, check now
+        {
+            //Transfer completed interrupt will give us a notification
+            ret = (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(timeout)) > 0) ? HAL_OK : HAL_ERROR;
+        }
 
         RELEASE_MUTEX();
         return ret;
@@ -78,7 +83,7 @@ namespace i2c
 } // namespace i2c
 
 _BEGIN_STD_C
-void i2c_dma_handler()
+void i2c_event_handler()
 {
     if (!i2c::current_invoker) return;
 
