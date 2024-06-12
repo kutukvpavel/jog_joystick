@@ -36,7 +36,8 @@ namespace wdt
          {
             //Let hardware WDT reset us
             auto& t = tasks[i];
-            if (t.name) ERR("Task %s WDT, last = %lu, now = %lu!", t.name, t.last_time, now);
+            HAL_IWDG_Refresh(&hiwdg);
+            ERR("Task %s WDT, last = %lu, now = %lu!", t.name ? t.name : "N/A", t.last_time, now);
             vTaskDelay(pdMS_TO_TICKS(100));
             vTaskSuspendAll();
             taskDISABLE_INTERRUPTS();

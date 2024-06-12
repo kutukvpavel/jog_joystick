@@ -7,6 +7,7 @@
 #include "cmd_streamer.h"
 #include "display.h"
 #include "nvs.h"
+#include "compat_api.h"
 
 #include "../USB_DEVICE/App/usb_device.h"
 #include "../Core/Inc/iwdg.h"
@@ -29,6 +30,8 @@ DEFINE_STATIC_TASK(MY_IO, 128);
 DEFINE_STATIC_TASK(MY_DISP, 256);
 DEFINE_STATIC_TASK(MY_WDT, 128);
 
+static void die_init_failed();
+
 _BEGIN_STD_C
 void StartDefaultTask(void *argument)
 {
@@ -45,19 +48,24 @@ void StartDefaultTask(void *argument)
 
     START_STATIC_TASK(MY_CLI, 1, handle);
     HAL_IWDG_Refresh(&hiwdg);
-    START_STATIC_TASK(MY_WDT, 1, handle);
+    START_STATIC_TASK(MY_WDT, 2, handle);
     HAL_IWDG_Refresh(&hiwdg);
 
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) ERR("IWDG reset detected!");
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+
     DBG("Single-threaded init");
+    DBG("Compat API Init...");
+    if (compat_api_init() != HAL_OK) die_init_failed();
     DBG("I2C Init...");
-    if (i2c::init() != HAL_OK) DIE_WITH_CLI("Failed to initialize I2C");
+    if (i2c::init() != HAL_OK) die_init_failed();
     DBG("NVS Init...");
-    if (nvs::init() != HAL_OK) DIE_WITH_CLI("Failed to initialize NVS");
+    if (nvs::init() != HAL_OK) die_init_failed();
     DBG("USB Init...");
     MX_USB_DEVICE_Init();
     HAL_IWDG_Refresh(&hiwdg);
 
-    DBG("[@ %lu] Starting tasks. Multithreaded init.");
+    DBG("Starting tasks. Multithreaded init.");
     START_STATIC_TASK(MY_ADC, 1, handle);
     HAL_IWDG_Refresh(&hiwdg);
     START_STATIC_TASK(MY_IO, 1, handle);
@@ -189,3 +197,7 @@ void supervize_led(led_states s)
     }
 }
 
+void die_init_failed()
+{
+    DIE_WITH_CLI("Init failed!");
+}

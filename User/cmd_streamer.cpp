@@ -176,6 +176,7 @@ namespace cmd_streamer
         a->jog_speed = s->enabled ? (s->speed * (s->direction ? 1 : -1)) : 0;
 
         xSemaphoreGive(mutex_handle);
+        return HAL_OK;
     }
 } // namespace cmd_streamer
 

@@ -24,6 +24,7 @@ namespace display
 
     void init()
     {
+        DBG("Display init...");
         data_mutex = xSemaphoreCreateMutexStatic(&data_mutex_buffer);
         assert_param(data_mutex);
         lcd->begin(20, 4);

@@ -112,12 +112,21 @@ namespace cli_commands
     }
     uint8_t nvs_report(int argc, char** argv)
     {
+        const char axis_letters[] = { 'X', 'Y', 'Z', 'A' };
+        static_assert(sizeof(axis_letters) == TOTAL_AXES);
+
         printf(
             "\tNVS ver: stored = %hu, required = %hu; %s\n",
             nvs::get_stored_version(),
             nvs::get_required_version(),
             nvs::get_version_match() ? "MATCH" : "DEFAULTS USED!"
         );
+        puts("\tAxis rapid feed rate:");
+        for (size_t i = 0; i < TOTAL_AXES; i++)
+        {
+            printf("%c: %f\n", axis_letters[i], nvs::get_rapid_speed(static_cast<axis::types>(i)));
+        }
+        
         return 0;
     }
 } // namespace cli_commands
