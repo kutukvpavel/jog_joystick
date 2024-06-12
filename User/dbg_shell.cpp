@@ -139,6 +139,14 @@ namespace cli_commands
 
         return 0;
     }
+    uint8_t usb_test(int argc, char** argv)
+    {
+        printf("\tCDC Connected = %" PRIu16 "\n\tCDC can transmit = %" PRIu16 "\n",
+            static_cast<uint16_t>(CDC_IsConnected()), static_cast<uint16_t>(CDC_Can_Transmit()));
+        if (CDC_Can_Transmit() == USBD_OK) CDC_PUTS("Hello, USB");
+
+        return 0;
+    }
 } // namespace cli_commands
 
 void init()
@@ -164,4 +172,6 @@ void init()
     CLI_ADD_CMD("nvs_report", "Report NVS contents in human-readable format", &cli_commands::nvs_report);
 
     CLI_ADD_CMD("hw_report", "Report HW state", &cli_commands::hw_report);
+
+    CLI_ADD_CMD("usb_test", "Report USB state and send a test string", &cli_commands::usb_test);
 }

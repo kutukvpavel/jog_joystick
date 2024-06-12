@@ -62,6 +62,9 @@
   */
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
+
+#define CDC_DTR_MASK 0x01
+
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -94,6 +97,8 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
+
+uint8_t dtr_detected = USBD_FAIL;
 
 /* USER CODE END PRIVATE_VARIABLES */
 
@@ -178,6 +183,7 @@ static int8_t CDC_DeInit_FS(void)
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 {
   /* USER CODE BEGIN 5 */
+  static uint8_t coding[7];
   switch(cmd)
   {
     case CDC_SEND_ENCAPSULATED_COMMAND:
@@ -218,15 +224,15 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-
+      memcpy(coding, pbuf, sizeof(coding) / sizeof(*coding));
     break;
 
     case CDC_GET_LINE_CODING:
-
+      memcpy(pbuf, coding, sizeof(coding) / sizeof(*coding));
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
-
+      if (((USBD_SetupReqTypedef*)pbuf)->wValue & CDC_DTR_MASK) dtr_detected = USBD_OK;
     break;
 
     case CDC_SEND_BREAK:
@@ -291,6 +297,24 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+
+uint8_t CDC_IsConnected()
+{
+  if ((hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED) ||
+    (hUsbDeviceFS.ep0_state != USBD_EP0_STATUS_IN)) 
+    dtr_detected = USBD_FAIL;
+  return dtr_detected;
+}
+
+uint8_t CDC_Can_Transmit()
+{
+  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+  assert_param(hcdc);
+  if (hcdc->TxState != 0){
+    return USBD_BUSY;
+  }
+  return USBD_OK;
+}
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 

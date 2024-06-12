@@ -162,7 +162,7 @@ namespace cmd_streamer
         {
             state = transmitter_state::waiting_for_ack;
             size_t len = strlen(buffer);
-            HAL_UART_Transmit(&huart2, reinterpret_cast<uint8_t*>(buffer), len, 10);
+            HAL_UART_Transmit_IT(&huart2, reinterpret_cast<uint8_t*>(buffer), len);
             CDC_Transmit_FS(reinterpret_cast<uint8_t*>(buffer), len);
         }
     }

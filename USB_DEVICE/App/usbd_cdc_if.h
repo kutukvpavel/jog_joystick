@@ -109,6 +109,9 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
 
+uint8_t CDC_IsConnected();
+uint8_t CDC_Can_Transmit();
+
 /* USER CODE END EXPORTED_FUNCTIONS */
 
 /**
