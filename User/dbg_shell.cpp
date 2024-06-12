@@ -136,6 +136,9 @@ namespace cli_commands
             float s = cmd_streamer::get_axis_jog_speed(static_cast<axis::types>(i));
             printf("\t\t%c: %f\n", axis_letters[i], s);
         }
+        printf("\tNC error responses count = %lu\n", cmd_streamer::get_error_count());
+        printf("\tNC OK responses count = %lu\n", cmd_streamer::get_ok_count());
+        printf("\tStreamer state = %lu\n", static_cast<uint32_t>(cmd_streamer::get_state()));
 
         return 0;
     }
