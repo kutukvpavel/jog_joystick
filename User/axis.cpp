@@ -1,6 +1,7 @@
 #include "axis.h"
 
 #include "a_io.h"
+#include "nvs.h"
 
 namespace axis
 {
@@ -83,7 +84,7 @@ namespace axis
 
         res.enabled = (n != p);
         res.direction = p && !n;
-        res.speed = a_io::get_input(i->speed_input);
+        res.speed = a_io::get_input(i->speed_input) * nvs::get_max_speed(t);
 
         debounce(&(res.enabled), &(i->last_state.enabled), &(i->d.enable));
         debounce(&(res.direction), &(i->last_state.direction), &(i->d.direction));

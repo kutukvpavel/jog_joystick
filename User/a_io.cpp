@@ -8,7 +8,8 @@
 #include "wdt.h"
 
 #define PACKED_FOR_DMA __packed __aligned(sizeof(uint32_t))
-#define ADC_CALC_VOLTAGE_APPROX(raw) (raw * ( 3300.0f / 0xFFFu ))
+#define ADC_CALC_VOLTAGE_APPROX(raw) (static_cast<float>(raw) * ( 3300.0f / 0xFFFu ))
+#define ADC_CALC_FRACTION(raw) (static_cast<float>(raw) * (1.0f / 0xFFFu))
 
 namespace a_io
 {
@@ -37,7 +38,7 @@ namespace a_io
         DBG("A_IO init...");
         for (size_t i = 0; i < in::LEN; i++)
         {
-            ch[i].a = new average(10);
+            ch[i].a = new average(50);
         }
         HAL_ADCEx_Calibration_Start(&hadc1);
         //Here sizeof()-magic is not intended to compute array size, ignore the warning
@@ -48,14 +49,16 @@ namespace a_io
 
     void process_data()
     {
-        ch[in::vref].a->enqueue(ADC_CALC_VOLTAGE_APPROX(buffer.vref1));
+        /*ch[in::vref].a->enqueue(ADC_CALC_VOLTAGE_APPROX(buffer.vref1));
         ch[in::vref].a->enqueue(ADC_CALC_VOLTAGE_APPROX(buffer.vref2));
-        ch[in::vref].v = ch[in::vref].a->get_average() * (3300.0f / 1200.0f);
+        ch[in::vref].v = ch[in::vref].a->get_average() * (3300.0f / 1200.0f);*/
         for (size_t i = 0; i < in::LEN; i++)
         {
             if (i == in::vref) continue;
-            ch[i].a->enqueue(__LL_ADC_CALC_DATA_TO_VOLTAGE(ch[in::vref].v, 
-                reinterpret_cast<volatile uint16_t*>(&buffer)[i], LL_ADC_RESOLUTION_12B));
+            ch[i].a->enqueue(/*__LL_ADC_CALC_DATA_TO_VOLTAGE(ch[in::vref].v, 
+                reinterpret_cast<volatile uint16_t*>(&buffer)[i], LL_ADC_RESOLUTION_12B)*/ 
+                ADC_CALC_FRACTION(reinterpret_cast<volatile uint16_t*>(&buffer)[i]));
+            ch[i].v = ch[i].a->get_average();
         }
     }
 

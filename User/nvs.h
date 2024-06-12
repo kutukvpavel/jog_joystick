@@ -18,4 +18,5 @@ namespace nvs
     bool get_version_match();
 
     float get_rapid_speed(axis::types t);
+    float get_max_speed(axis::types t);
 } // namespace nvs

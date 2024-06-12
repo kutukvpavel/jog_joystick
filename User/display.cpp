@@ -13,8 +13,9 @@ namespace display
         bool direction;
     };
 
-    const size_t line_buffer_length = 21;
-    const char labels[line_buffer_length] = "  X  " "  Y  " "  Z  " "  A  ";
+    const size_t display_width = 20;
+    const size_t display_heigth = 4;
+    const size_t line_buffer_length = display_width + 1;
     static char speed_buffer[line_buffer_length];
     static char state_buffer[line_buffer_length];
     static display_data data[TOTAL_AXES] = { };
@@ -27,11 +28,16 @@ namespace display
         DBG("Display init...");
         data_mutex = xSemaphoreCreateMutexStatic(&data_mutex_buffer);
         assert_param(data_mutex);
-        lcd->begin(20, 4);
+        speed_buffer[line_buffer_length - 1] = '\0';
+        state_buffer[line_buffer_length - 1] = '\0';
+        lcd->begin(display_width, display_heigth);
         //Print labels
         lcd->clear();
         lcd->home();
-        lcd->print(labels);
+        lcd->print("  X  " "  Y  " "  Z  " "  A  ");
+        const char units[] = "mm/s";
+        lcd->setCursor(display_width - (sizeof(units) - 1), display_heigth - 1);
+        lcd->print(units);
         lcd->setBacklight(255);
     }
 
@@ -51,7 +57,8 @@ namespace display
     void process_data()
     {
         const size_t field_len = (line_buffer_length - 1) / TOTAL_AXES;
-        const char speed_format[] = "%5.1f";
+        static_assert(field_len == 5); //Change following line if field length changes:
+        const char speed_format[] = "%4.1f ";
         const char state_idle[field_len + 1] = "     ";
         const char state_jog_n[field_len + 1] = "  -  ";
         const char state_jog_p[field_len + 1] = "  +  ";

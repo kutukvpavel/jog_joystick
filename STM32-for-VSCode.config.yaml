@@ -57,6 +57,7 @@ linkerFlags:
   - -Wl,--print-memory-usage
   - -Wl,--no-warn-rwx-segment
   - -Wl,--strip-debug
+  - -u _printf_float
   - -flto
 
 

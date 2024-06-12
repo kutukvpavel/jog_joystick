@@ -1,0 +1,4 @@
+Warning: works only on "unofficial" 128k-flash devices (linker script tweaked!).
+
+TODO: make LCD-related stuff non-blocking (takes 20mS).
+Check command streamer.
