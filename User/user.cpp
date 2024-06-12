@@ -61,6 +61,7 @@ void StartDefaultTask(void *argument)
     if (i2c::init() != HAL_OK) die_init_failed();
     DBG("NVS Init...");
     if (nvs::init() != HAL_OK) die_init_failed();
+    if (nvs::load() != HAL_OK) DIE_WITH_CLI("Failed to load NVS data");
     DBG("USB Init...");
     MX_USB_DEVICE_Init();
     HAL_IWDG_Refresh(&hiwdg);

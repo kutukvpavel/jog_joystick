@@ -20,7 +20,7 @@ namespace display
     static display_data data[TOTAL_AXES] = { };
     static SemaphoreHandle_t data_mutex = NULL;
     static StaticSemaphore_t data_mutex_buffer;
-    static LiquidCrystal_PCF8574* lcd = new LiquidCrystal_PCF8574();
+    static LiquidCrystal_PCF8574* lcd = new LiquidCrystal_PCF8574(0b01111110);
 
     void init()
     {
@@ -32,6 +32,7 @@ namespace display
         lcd->clear();
         lcd->home();
         lcd->print(labels);
+        lcd->setBacklight(255);
     }
 
     HAL_StatusTypeDef set_axis_state(axis::types t, state s, bool direction, float speed)
