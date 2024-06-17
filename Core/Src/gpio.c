@@ -54,11 +54,21 @@ void MX_GPIO_Init(void)
   LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
   /**/
+  LL_GPIO_ResetOutputPin(ESP_EN_GPIO_Port, ESP_EN_Pin);
+
+  /**/
   GPIO_InitStruct.Pin = OUT_LED_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   LL_GPIO_Init(OUT_LED_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = ESP_EN_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  LL_GPIO_Init(ESP_EN_GPIO_Port, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = IN_A_P_Pin|IN_A_N_Pin|IN_Z_P_Pin|IN_RES_Pin

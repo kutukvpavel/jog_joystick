@@ -41,6 +41,7 @@ void StartDefaultTask(void *argument)
     static TaskHandle_t handle;
 
     HAL_IWDG_Refresh(&hiwdg);
+    LL_GPIO_ResetOutputPin(ESP_EN_GPIO_Port, ESP_EN_Pin);
     LL_GPIO_ResetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
     handle = xTaskGetCurrentTaskHandle();
@@ -75,6 +76,7 @@ void StartDefaultTask(void *argument)
 
     HAL_IWDG_Refresh(&hiwdg);
     vTaskDelay(pdMS_TO_TICKS(100));
+    LL_GPIO_SetOutputPin(ESP_EN_GPIO_Port, ESP_EN_Pin);
     LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
     pwdt = wdt::register_task(2000, "main");
