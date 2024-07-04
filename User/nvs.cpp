@@ -9,7 +9,7 @@
 #define MY_NVS_I2C_ADDR(mem_addr) (MY_EEPROM_ADDR | ((mem_addr & 0x700) >> 7))
 #define MY_NVS_VER_ADDR 0u
 #define MY_NVS_START_ADDRESS 8u
-#define MY_NVS_VERSION 2u
+#define MY_NVS_VERSION 3u
 #define MY_NVS_PAGE_SIZE 8u
 #define MY_NVS_TOTAL_PAGES 64u
 #define MY_NVS_TOTAL_SIZE (MY_NVS_PAGE_SIZE * MY_NVS_TOTAL_PAGES)
@@ -27,13 +27,17 @@ namespace nvs
     {
         float rapid_feed_rate[TOTAL_AXES];
         float max_feed_rate[TOTAL_AXES];
+        float min_feed_rate[TOTAL_AXES];
     };
     static storage_t storage = {
         .rapid_feed_rate = {
-            20, 10, 5, 10
+            25, 15, 5, 10
         },
         .max_feed_rate = {
-            10, 5, 3, 5
+            15, 10, 3, 5
+        },
+        .min_feed_rate = {
+            0.1, 0.1, 0.1, 0.1
         }
     };
 
@@ -102,7 +106,7 @@ namespace nvs
     HAL_StatusTypeDef init()
     {
         static_assert(MY_NVS_START_ADDRESS % MY_NVS_PAGE_SIZE == 0);
-        static_assert(sizeof(storage_t) < (MY_EEPROM_SIZE - MY_NVS_START_ADDRESS));
+        static_assert((sizeof(storage_t) + sizeof(storage_preamble_t)) < (MY_EEPROM_SIZE - MY_NVS_START_ADDRESS));
         static_assert(sizeof(storage_preamble_t) < MY_NVS_PAGE_SIZE);
         HAL_StatusTypeDef ret;
 
@@ -217,5 +221,9 @@ namespace nvs
     float get_max_speed(axis::types t)
     {
         return storage.max_feed_rate[static_cast<size_t>(t)];
+    }
+    float get_min_speed(axis::types t)
+    {
+        return storage.min_feed_rate[static_cast<size_t>(t)];
     }
 } // namespace nvs

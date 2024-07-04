@@ -16,4 +16,5 @@ namespace display
     };
 
     HAL_StatusTypeDef set_axis_state(axis::types t, state s, bool direction, float speed);
+    void set_initialized();
 } // namespace display

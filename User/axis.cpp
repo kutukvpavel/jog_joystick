@@ -84,7 +84,7 @@ namespace axis
 
         res.enabled = (n != p);
         res.direction = p && !n;
-        res.speed = a_io::get_input(i->speed_input) * nvs::get_max_speed(t);
+        res.speed = a_io::get_input(i->speed_input) * (nvs::get_max_speed(t) - nvs::get_min_speed(t)) + nvs::get_min_speed(t);
 
         debounce(&(res.enabled), &(i->last_state.enabled), &(i->d.enable));
         debounce(&(res.direction), &(i->last_state.direction), &(i->d.direction));

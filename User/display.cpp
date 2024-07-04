@@ -38,7 +38,6 @@ namespace display
         const char units[] = "mm/s";
         lcd->setCursor(display_width - (sizeof(units) - 1), display_heigth - 1);
         lcd->print(units);
-        lcd->setBacklight(255);
     }
 
     HAL_StatusTypeDef set_axis_state(axis::types t, state s, bool direction, float speed)
@@ -52,6 +51,10 @@ namespace display
 
         xSemaphoreGive(data_mutex);
         return HAL_OK;
+    }
+    void set_initialized()
+    {
+        lcd->setBacklight(255);
     }
 
     void process_data()

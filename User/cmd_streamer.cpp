@@ -88,6 +88,7 @@ namespace cmd_streamer
     static SemaphoreHandle_t mutex_handle = NULL;
     static StaticSemaphore_t mutex_buffer;
     static transmitter_state state = transmitter_state::ready;
+    static TickType_t waiting_start_time = configINITIAL_TICK_COUNT;
     static uint32_t error_responses = 0;
     static uint32_t ok_responses = 0;
 
@@ -166,6 +167,7 @@ namespace cmd_streamer
 
             transmit_ptr = jog_buffer;
             state = transmitter_state::waiting_for_ack;
+            waiting_start_time = xTaskGetTickCount();
         }
         else if (prev_active) //Abort jog
         {
@@ -224,6 +226,13 @@ STATIC_TASK_BODY(MY_IO)
             if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(20)) > 0)
             {
                 cmd_streamer::validate_response();
+            }
+            else
+            {
+                if ((xTaskGetTickCount() - cmd_streamer::waiting_start_time) > pdMS_TO_TICKS(1000))
+                {
+                    cmd_streamer::state = cmd_streamer::transmitter_state::ready;
+                }
             }
             //last_wake = xTaskGetTickCount();
             break;
