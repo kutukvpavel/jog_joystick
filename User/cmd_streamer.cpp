@@ -161,7 +161,7 @@ namespace cmd_streamer
                 auto& a = data[i];
                 if (a.jog_step == 0) continue;
 
-                index += snprintf(jog_buffer + index, sizeof(jog_buffer) - index, "%c%.2f ", a.designator, a.jog_step);
+                index += snprintf(jog_buffer + index, sizeof(jog_buffer) - index, "%c%.3f ", a.designator, a.jog_step);
             }
             snprintf(jog_buffer + index, sizeof(jog_buffer) - index, "F%.0f\n", total_feed_rate);
 
