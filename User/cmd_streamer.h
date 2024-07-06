@@ -19,6 +19,7 @@ namespace cmd_streamer
     float get_axis_jog_speed(axis::types t);
     uint32_t get_error_count();
     uint32_t get_ok_count();
+    uint32_t get_timeouts();
     transmitter_state get_state();
 } // namespace cmd_queue
 

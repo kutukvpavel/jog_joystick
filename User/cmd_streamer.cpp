@@ -91,6 +91,7 @@ namespace cmd_streamer
     static TickType_t waiting_start_time = configINITIAL_TICK_COUNT;
     static uint32_t error_responses = 0;
     static uint32_t ok_responses = 0;
+    static uint32_t timeouts = 0;
 
     HAL_StatusTypeDef init()
     {
@@ -120,6 +121,10 @@ namespace cmd_streamer
     transmitter_state get_state()
     {
         return state;
+    }
+    uint32_t get_timeouts()
+    {
+        return timeouts;
     }
 
     void stream_next()
@@ -166,8 +171,8 @@ namespace cmd_streamer
             snprintf(jog_buffer + index, sizeof(jog_buffer) - index, "F%.0f\n", total_feed_rate);
 
             transmit_ptr = jog_buffer;
-            state = transmitter_state::waiting_for_ack;
             waiting_start_time = xTaskGetTickCount();
+            state = transmitter_state::waiting_for_ack;
         }
         else if (prev_active) //Abort jog
         {
@@ -231,10 +236,10 @@ STATIC_TASK_BODY(MY_IO)
             {
                 if ((xTaskGetTickCount() - cmd_streamer::waiting_start_time) > pdMS_TO_TICKS(1000))
                 {
+                    cmd_streamer::timeouts++;
                     cmd_streamer::state = cmd_streamer::transmitter_state::ready;
                 }
             }
-            //last_wake = xTaskGetTickCount();
             break;
         }
         vTaskDelayUntil(&last_wake, delay);
@@ -264,7 +269,7 @@ void cmd_queue_uart_rxcplt_callback(UART_HandleTypeDef *huart)
         cmd_streamer::receiver::UART_RxBuf[tmphead] = cmd_streamer::receiver::UART_ByteBuffer;
         if (cmd_streamer::receiver::UART_ByteBuffer == '\n')
         {
-            BaseType_t woken;
+            BaseType_t woken = pdFALSE;
             vTaskNotifyGiveFromISR(STATIC_TASK_HANDLE(MY_IO), &woken);
             portYIELD_FROM_ISR(woken);
         }

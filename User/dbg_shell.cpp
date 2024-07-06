@@ -138,6 +138,7 @@ namespace cli_commands
         }
         printf("\tNC error responses count = %lu\n", cmd_streamer::get_error_count());
         printf("\tNC OK responses count = %lu\n", cmd_streamer::get_ok_count());
+        printf("\tNC response timeouts = %lu\n", cmd_streamer::get_timeouts());
         printf("\tStreamer state = %lu\n", static_cast<uint32_t>(cmd_streamer::get_state()));
 
         return 0;

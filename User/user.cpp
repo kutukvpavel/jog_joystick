@@ -26,7 +26,7 @@ static inline void user_main(wdt::task_t* pwdt);
 
 DEFINE_STATIC_TASK(MY_CLI, 256);
 DEFINE_STATIC_TASK(MY_ADC, 128);
-DEFINE_STATIC_TASK(MY_IO, 128);
+DEFINE_STATIC_TASK(MY_IO, 256);
 DEFINE_STATIC_TASK(MY_DISP, 256);
 DEFINE_STATIC_TASK(MY_WDT, 128);
 
@@ -90,6 +90,15 @@ void StartDefaultTask(void *argument)
         pwdt->last_time = xTaskGetTickCount();
     }
 }
+
+#if configCHECK_FOR_STACK_OVERFLOW
+    void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+    {
+        puts("Stack overflow: ");
+        puts(pcTaskName);
+    }
+#endif
+
 _END_STD_C
 
 enum class led_states
