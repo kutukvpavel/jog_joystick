@@ -9,7 +9,7 @@
 #define MY_NVS_I2C_ADDR(mem_addr) (MY_EEPROM_ADDR | ((mem_addr & 0x700) >> 7))
 #define MY_NVS_VER_ADDR 0u
 #define MY_NVS_START_ADDRESS 8u
-#define MY_NVS_VERSION 3u
+#define MY_NVS_VERSION 4u
 #define MY_NVS_PAGE_SIZE 8u
 #define MY_NVS_TOTAL_PAGES 64u
 #define MY_NVS_TOTAL_SIZE (MY_NVS_PAGE_SIZE * MY_NVS_TOTAL_PAGES)
@@ -28,17 +28,19 @@ namespace nvs
         float rapid_feed_rate[TOTAL_AXES];
         float max_feed_rate[TOTAL_AXES];
         float min_feed_rate[TOTAL_AXES];
+        float pot_low_threshold;
     };
     static storage_t storage = {
         .rapid_feed_rate = {
-            25, 15, 5, 10
+            35, 25, 5, 10
         },
         .max_feed_rate = {
-            15, 10, 3, 5
+            7, 5, 3, 5
         },
         .min_feed_rate = {
             0.1, 0.1, 0.1, 0.1
-        }
+        },
+        .pot_low_threshold = 0.02
     };
 
     static storage_preamble_t preamble = {};
@@ -225,5 +227,27 @@ namespace nvs
     float get_min_speed(axis::types t)
     {
         return storage.min_feed_rate[static_cast<size_t>(t)];
+    }
+
+    void set_rapid_speed(axis::types t, float s)
+    {
+        storage.rapid_feed_rate[static_cast<size_t>(t)] = s;
+    }
+    void set_max_speed(axis::types t, float s)
+    {
+        storage.max_feed_rate[static_cast<size_t>(t)] = s;
+    }
+    void set_min_speed(axis::types t, float s)
+    {
+        storage.min_feed_rate[static_cast<size_t>(t)] = s;
+    }
+    
+    float get_low_pot_threshold()
+    {
+        return storage.pot_low_threshold;
+    }
+    void set_low_pot_threshold(float v)
+    {
+        storage.pot_low_threshold = v;
     }
 } // namespace nvs

@@ -24,7 +24,7 @@
 
 static inline void user_main(wdt::task_t* pwdt);
 
-DEFINE_STATIC_TASK(MY_CLI, 256);
+DEFINE_STATIC_TASK(MY_CLI, 512);
 DEFINE_STATIC_TASK(MY_ADC, 128);
 DEFINE_STATIC_TASK(MY_IO, 256);
 DEFINE_STATIC_TASK(MY_DISP, 256);
@@ -63,6 +63,8 @@ void StartDefaultTask(void *argument)
     DBG("NVS Init...");
     if (nvs::init() != HAL_OK) die_init_failed();
     if (nvs::load() != HAL_OK) DIE_WITH_CLI("Failed to load NVS data");
+    DBG("Axis Init...");
+    axis::init();
     DBG("USB Init...");
     MX_USB_DEVICE_Init();
     HAL_IWDG_Refresh(&hiwdg);

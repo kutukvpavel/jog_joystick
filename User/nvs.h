@@ -20,4 +20,11 @@ namespace nvs
     float get_rapid_speed(axis::types t);
     float get_max_speed(axis::types t);
     float get_min_speed(axis::types t);
+
+    void set_rapid_speed(axis::types t, float s);
+    void set_max_speed(axis::types t, float s);
+    void set_min_speed(axis::types t, float s);
+
+    float get_low_pot_threshold();
+    void set_low_pot_threshold(float v);
 } // namespace nvs

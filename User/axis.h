@@ -22,6 +22,8 @@ namespace axis
         float speed;
     };
 
+    void init();
+
     state poll(types t);
     bool get_fast();
 } // namespace axis

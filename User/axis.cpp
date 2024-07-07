@@ -52,6 +52,12 @@ namespace axis
             .speed_input = a_io::in::a_speed
         }
     };
+    static float mapping_k = 1;
+
+    void init()
+    {
+        mapping_k = 1.0f / (1.0f - nvs::get_low_pot_threshold());
+    }
 
     void debounce(bool* now, bool* last, uint32_t* debouncer)
     {
@@ -81,10 +87,12 @@ namespace axis
 
         bool n = LL_GPIO_IsInputPinSet(i->port_n, i->pin_n) > 0;
         bool p = LL_GPIO_IsInputPinSet(i->port_p, i->pin_p) > 0;
+        float multiplier = mapping_k * (a_io::get_input(i->speed_input) - nvs::get_low_pot_threshold());
+        if (multiplier < 0) multiplier = 0;
 
         res.enabled = (n != p);
         res.direction = p && !n;
-        res.speed = a_io::get_input(i->speed_input) * (nvs::get_max_speed(t) - nvs::get_min_speed(t)) + nvs::get_min_speed(t);
+        res.speed = multiplier * (nvs::get_max_speed(t) - nvs::get_min_speed(t)) + nvs::get_min_speed(t);
 
         debounce(&(res.enabled), &(i->last_state.enabled), &(i->d.enable));
         debounce(&(res.direction), &(i->last_state.direction), &(i->d.direction));

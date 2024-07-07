@@ -58,6 +58,7 @@ linkerFlags:
   - -Wl,--no-warn-rwx-segment
   - -Wl,--strip-debug
   - -u _printf_float
+  - -u _scanf_float
   - -flto
 
 

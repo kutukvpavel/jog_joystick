@@ -37,6 +37,18 @@ namespace cli_commands
     //Common API
     const char axis_letters[] = { 'X', 'Y', 'Z', 'A' };
 
+    uint8_t parse_and_set_axis_speed(int argc, char** argv, void (*set_func)(axis::types, float))
+    {
+        if (argc < 3) return 1;
+        uint32_t axis;
+        if (sscanf(argv[1], "%" SCNu32, &axis) != 1) return 2;
+        if (axis >= static_cast<uint32_t>(axis::types::LEN)) return 3;
+        float speed;
+        if (sscanf(argv[2], "%f", &speed) != 1) return 2;
+        set_func(static_cast<axis::types>(axis), speed);
+        return 0;
+    }
+
     //Actual commands
     uint8_t info(int argc, char** argv)
     {
@@ -123,8 +135,19 @@ namespace cli_commands
         puts("\tAxis rapid feed rate:");
         for (size_t i = 0; i < TOTAL_AXES; i++)
         {
-            printf("%c: %f\n", axis_letters[i], nvs::get_rapid_speed(static_cast<axis::types>(i)));
+            printf("\t\t%c: %f\n", axis_letters[i], nvs::get_rapid_speed(static_cast<axis::types>(i)));
         }
+        puts("\tAxis max feed rate:");
+        for (size_t i = 0; i < TOTAL_AXES; i++)
+        {
+            printf("\t\t%c: %f\n", axis_letters[i], nvs::get_max_speed(static_cast<axis::types>(i)));
+        }
+        puts("\tAxis min feed rate:");
+        for (size_t i = 0; i < TOTAL_AXES; i++)
+        {
+            printf("\t\t%c: %f\n", axis_letters[i], nvs::get_min_speed(static_cast<axis::types>(i)));
+        }
+        printf("\tPot low threshold: %f\n", nvs::get_low_pot_threshold());
         
         return 0;
     }
@@ -149,6 +172,28 @@ namespace cli_commands
             static_cast<uint16_t>(CDC_IsConnected()), static_cast<uint16_t>(CDC_Can_Transmit()));
         if (CDC_Can_Transmit() == USBD_OK) CDC_PUTS("Hello, USB");
 
+        return 0;
+    }
+
+    uint8_t set_rapid_speed(int argc, char** argv)
+    {
+        return parse_and_set_axis_speed(argc, argv, nvs::set_rapid_speed);
+    }
+    uint8_t set_max_speed(int argc, char** argv)
+    {
+        return parse_and_set_axis_speed(argc, argv, nvs::set_max_speed);
+    }
+    uint8_t set_min_speed(int argc, char** argv)
+    {
+        return parse_and_set_axis_speed(argc, argv, nvs::set_min_speed);
+    }
+    uint8_t set_pot_low(int argc, char** argv)
+    {
+        if (argc < 2) return 1;
+        float threshold;
+        if (sscanf(argv[1], "%f", &threshold) != 1) return 2;
+        if (threshold < 0 || threshold > 0.2) return 3;
+        nvs::set_low_pot_threshold(threshold);
         return 0;
     }
 } // namespace cli_commands
@@ -178,4 +223,13 @@ void init()
     CLI_ADD_CMD("hw_report", "Report HW state", &cli_commands::hw_report);
 
     CLI_ADD_CMD("usb_test", "Report USB state and send a test string", &cli_commands::usb_test);
+
+    CLI_ADD_CMD("set_rapid_speed", "Set rapid feed speed for axis, expects axis index (int) and a float", 
+        &cli_commands::set_rapid_speed);
+    CLI_ADD_CMD("set_max_speed", "Set max feed rate for axis, expects axis index (int) and a float", 
+        &cli_commands::set_max_speed);
+    CLI_ADD_CMD("set_min_speed", "Set min feed rate for axis, expects axis index (int) and a float", 
+        &cli_commands::set_min_speed);
+    CLI_ADD_CMD("set_pot_low", "Set potentiometer blanking distance from 0 (to suppress uneven region near track end)", 
+        &cli_commands::set_pot_low);
 }
