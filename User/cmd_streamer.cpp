@@ -127,12 +127,13 @@ namespace cmd_streamer
         return timeouts;
     }
 
-    void stream_next()
+    bool stream_next()
     {
         static char jog_buffer[64] = "$J=G91 "; //7 characters
         static char cancel_buffer[] = { 0x85, 0x00 };
         static bool prev_active = false;
 
+        bool use_full_delay = true;
         bool active = false;
         float total_feed_rate = 0;
 
@@ -173,6 +174,7 @@ namespace cmd_streamer
             transmit_ptr = jog_buffer;
             waiting_start_time = xTaskGetTickCount();
             state = transmitter_state::waiting_for_ack;
+            if (!prev_active) use_full_delay = false; //Shorten first delay between jog commands
         }
         else if (prev_active) //Abort jog
         {
@@ -186,6 +188,8 @@ namespace cmd_streamer
             HAL_UART_Transmit_IT(&huart2, reinterpret_cast<uint8_t*>(transmit_ptr), len);
             CDC_Transmit_FS(reinterpret_cast<uint8_t*>(transmit_ptr), len);
         }
+
+        return use_full_delay;
     }
 
     HAL_StatusTypeDef set_axis_state(axis::types t, const axis::state *s)
@@ -212,8 +216,10 @@ _BEGIN_STD_C
 STATIC_TASK_BODY(MY_IO)
 {
     const TickType_t delay = pdMS_TO_TICKS(TAU_MS);
+    const TickType_t first_delay = delay / 2;
     static wdt::task_t* pwdt;
     static TickType_t last_wake;
+    static bool use_full_delay = true;
 
     cmd_streamer::init();
     pwdt = wdt::register_task(500, "cmd_io");
@@ -225,7 +231,7 @@ STATIC_TASK_BODY(MY_IO)
         switch (cmd_streamer::state)
         {
         case cmd_streamer::transmitter_state::ready:
-            cmd_streamer::stream_next();
+            use_full_delay = cmd_streamer::stream_next();
             break;
         case cmd_streamer::transmitter_state::waiting_for_ack:
             if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(20)) > 0)
@@ -242,7 +248,8 @@ STATIC_TASK_BODY(MY_IO)
             }
             break;
         }
-        vTaskDelayUntil(&last_wake, delay);
+        //Shorten the delay between the first and the second jog commands to prevent jerky motion due to deceleration
+        vTaskDelayUntil(&last_wake, use_full_delay ? delay : first_delay);
         pwdt->last_time = xTaskGetTickCount();
     }
 }
