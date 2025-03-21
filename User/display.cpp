@@ -35,7 +35,7 @@ namespace display
         lcd->clear();
         lcd->home();
         lcd->print("  X  " "  Y  " "  Z  " "  A  ");
-        const char units[] = "mm/s";
+        const char units[] = "mm/s     \xEF/s";
         lcd->setCursor(display_width - (sizeof(units) - 1), display_heigth - 1);
         lcd->print(units);
     }

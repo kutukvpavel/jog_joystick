@@ -79,7 +79,7 @@ void StartDefaultTask(void *argument)
     HAL_IWDG_Refresh(&hiwdg);
     vTaskDelay(pdMS_TO_TICKS(100));
     LL_GPIO_SetOutputPin(ESP_EN_GPIO_Port, ESP_EN_Pin);
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    vTaskDelay(pdMS_TO_TICKS(10000));
     display::set_initialized();
     LL_GPIO_SetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
