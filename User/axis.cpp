@@ -9,6 +9,8 @@ namespace axis
     {
         uint32_t enable;
         uint32_t direction;
+        uint32_t trigger_n;
+        uint32_t trigger_p;
     };
     struct instance
     {
@@ -19,6 +21,10 @@ namespace axis
         a_io::in speed_input;
         state last_state;
         debouncer d;
+        GPIO_TypeDef* port_trigger_n;
+        uint32_t pin_trigger_n;
+        GPIO_TypeDef* port_trigger_p;
+        uint32_t pin_trigger_p;
     };
 
     const uint32_t debouncer_limit = 5;
@@ -28,28 +34,11 @@ namespace axis
             .pin_n = IN_X_N_Pin,
             .port_p = IN_X_P_GPIO_Port,
             .pin_p = IN_X_P_Pin,
-            .speed_input = a_io::in::x_speed
-        },
-        {
-            .port_n = IN_Y_N_GPIO_Port,
-            .pin_n = IN_Y_N_Pin,
-            .port_p = IN_Y_P_GPIO_Port,
-            .pin_p = IN_Y_P_Pin,
-            .speed_input = a_io::in::y_speed
-        },
-        {
-            .port_n = IN_Z_N_GPIO_Port,
-            .pin_n = IN_Z_N_Pin,
-            .port_p = IN_Z_P_GPIO_Port,
-            .pin_p = IN_Z_P_Pin,
-            .speed_input = a_io::in::z_speed
-        },
-        {
-            .port_n = IN_A_N_GPIO_Port,
-            .pin_n = IN_A_N_Pin,
-            .port_p = IN_A_P_GPIO_Port,
-            .pin_p = IN_A_P_Pin,
-            .speed_input = a_io::in::a_speed
+            .speed_input = a_io::in::x_speed,
+            .port_trigger_n = IN_A_N_GPIO_Port,
+            .pin_trigger_n = IN_A_N_Pin,
+            .port_trigger_p = IN_A_P_GPIO_Port,
+            .pin_trigger_p = IN_A_P_Pin,
         }
     };
     static float mapping_k = 1;
@@ -90,12 +79,16 @@ namespace axis
         float multiplier = mapping_k * (a_io::get_input(i->speed_input) - nvs::get_low_pot_threshold());
         if (multiplier < 0) multiplier = 0;
 
-        res.enabled = (n != p);
+        res.jog_enabled = (n != p);
         res.direction = p && !n;
         res.speed = multiplier * (nvs::get_max_speed(t) - nvs::get_min_speed(t)) + nvs::get_min_speed(t);
+        res.trigger_auto_neg = LL_GPIO_IsInputPinSet(i->port_trigger_n, i->pin_trigger_n);
+        res.trigger_auto_pos = LL_GPIO_IsInputPinSet(i->port_trigger_p, i->pin_trigger_p);
 
-        debounce(&(res.enabled), &(i->last_state.enabled), &(i->d.enable));
+        debounce(&(res.jog_enabled), &(i->last_state.jog_enabled), &(i->d.enable));
         debounce(&(res.direction), &(i->last_state.direction), &(i->d.direction));
+        debounce(&(res.trigger_auto_neg), &(i->last_state.trigger_auto_neg), &(i->d.trigger_n));
+        debounce(&(res.trigger_auto_pos), &(i->last_state.trigger_auto_pos), &(i->d.trigger_p));
 
         return res;
     }

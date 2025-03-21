@@ -13,7 +13,7 @@ namespace display
         bool direction;
     };
 
-    const size_t display_width = 20;
+    const size_t display_width = 16;
     const size_t display_heigth = 4;
     const size_t line_buffer_length = display_width + 1;
     static char speed_buffer[line_buffer_length];
@@ -60,8 +60,8 @@ namespace display
     void process_data()
     {
         const size_t field_len = (line_buffer_length - 1) / TOTAL_AXES;
-        static_assert(field_len == 5); //Change following line if field length changes:
-        const char speed_format[] = "%4.1f ";
+        static_assert(field_len == 16); //Change following line if field length changes:
+        const char speed_format[] = "%5.1f ";
         const char state_idle[field_len + 1] = "     ";
         const char state_jog_n[field_len + 1] = "  -  ";
         const char state_jog_p[field_len + 1] = "  +  ";

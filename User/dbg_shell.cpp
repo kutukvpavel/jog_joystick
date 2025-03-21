@@ -35,7 +35,7 @@ _END_STD_C
 namespace cli_commands
 {
     //Common API
-    const char axis_letters[] = { 'X', 'Y', 'Z', 'A' };
+    const char axis_letters[] = { 'X' };
 
     uint8_t parse_and_set_axis_speed(int argc, char** argv, void (*set_func)(axis::types, float))
     {

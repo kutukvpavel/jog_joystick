@@ -32,13 +32,13 @@ namespace nvs
     };
     static storage_t storage = {
         .rapid_feed_rate = {
-            35, 25, 5, 10
+            300
         },
         .max_feed_rate = {
-            7, 5, 3, 5
+            100
         },
         .min_feed_rate = {
-            0.1, 0.1, 0.1, 0.1
+            0.1
         },
         .pot_low_threshold = 0.02
     };

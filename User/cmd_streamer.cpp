@@ -70,19 +70,12 @@ namespace cmd_streamer
         char designator;
         float jog_speed; //mm/s
         float jog_step; //mm
+        float auto_speed;
+        bool auto_trigger;
     };
     static axis_cmd_data data[TOTAL_AXES] = { 
         {
             .designator = 'X'
-        },
-        {
-            .designator = 'Y'
-        },
-        {
-            .designator = 'Z'
-        },
-        {
-            .designator = 'A'
         }
     };
     static SemaphoreHandle_t mutex_handle = NULL;
@@ -92,6 +85,9 @@ namespace cmd_streamer
     static uint32_t error_responses = 0;
     static uint32_t ok_responses = 0;
     static uint32_t timeouts = 0;
+    static const char macro_auto_pos[] = "$RM=0";
+    static const char macro_auto_neg[] = "$RM=1";
+    static const char* auto_trigger_exec_ptr = macro_auto_pos;
 
     HAL_StatusTypeDef init()
     {
@@ -100,13 +96,13 @@ namespace cmd_streamer
         return receiver::init();
     }
 
-    void validate_response()
+    void validate_response(transmitter_state target_state)
     {
         if (!receiver::get_available()) return;
         if (receiver::validate_response() != HAL_OK) error_responses++;
         else 
         {
-            state = transmitter_state::ready;
+            state = target_state;
             ok_responses++;
         }
     }
@@ -130,10 +126,12 @@ namespace cmd_streamer
     void stream_next()
     {
         static char jog_buffer[64] = "$J=G91 "; //7 characters
+        static char feed_buffer[64] = "G1 F";
         static char cancel_buffer[] = { 0x85, 0x00 };
         static bool prev_active = false;
 
         bool active = false;
+        bool trigger_auto = false;
         float total_feed_rate = 0;
 
         while (xSemaphoreTake(mutex_handle, portMAX_DELAY) != pdTRUE);
@@ -150,6 +148,13 @@ namespace cmd_streamer
             else
             {
                 a.jog_step = 0;
+                if (a.auto_trigger)
+                {
+                    auto_trigger_exec_ptr = a.auto_speed < 0 ? macro_auto_neg : macro_auto_pos;
+                    total_feed_rate += a.auto_speed * a.auto_speed;
+                    trigger_auto = true;
+                    a.auto_trigger = false;
+                }
             }
         }
 
@@ -172,11 +177,22 @@ namespace cmd_streamer
 
             transmit_ptr = jog_buffer;
             waiting_start_time = xTaskGetTickCount();
-            state = transmitter_state::waiting_for_ack;
+            state = transmitter_state::waiting_for_jog_ack;
         }
         else if (prev_active) //Abort jog
         {
             transmit_ptr = cancel_buffer;
+        }
+        else if (trigger_auto)
+        {
+            static const size_t index = 4;
+
+            total_feed_rate = PER_MIN(sqrtf(total_feed_rate));
+            snprintf(feed_buffer + index, sizeof(feed_buffer) - index, "%.0f\n", total_feed_rate);
+
+            transmit_ptr = feed_buffer;
+            waiting_start_time = xTaskGetTickCount();
+            state = transmitter_state::waiting_for_feed_ack;
         }
         prev_active = active;
 
@@ -194,7 +210,19 @@ namespace cmd_streamer
 
         if (xSemaphoreTake(mutex_handle, 0) != pdTRUE) return HAL_BUSY;
 
-        a->jog_speed = s->enabled ? (s->speed * (s->direction ? 1 : -1)) : 0;
+        if (s->jog_enabled)
+        {
+            a->jog_speed = s->speed * (s->direction ? 1 : -1);
+        }
+        else
+        {
+            a->jog_speed = 0;
+            if (!a->auto_trigger) //Cleared once the command is sent
+            {
+                a->auto_speed = s->speed * (s->trigger_auto_neg ? -1 : 1);
+                a->auto_trigger = s->trigger_auto_neg || s->trigger_auto_pos;
+            }
+        }
 
         xSemaphoreGive(mutex_handle);
         return HAL_OK;
@@ -227,10 +255,10 @@ STATIC_TASK_BODY(MY_IO)
         case cmd_streamer::transmitter_state::ready:
             cmd_streamer::stream_next();
             break;
-        case cmd_streamer::transmitter_state::waiting_for_ack:
+        case cmd_streamer::transmitter_state::waiting_for_jog_ack:
             if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(20)) > 0)
             {
-                cmd_streamer::validate_response();
+                cmd_streamer::validate_response(cmd_streamer::transmitter_state::ready);
             }
             else
             {
@@ -241,6 +269,28 @@ STATIC_TASK_BODY(MY_IO)
                 }
             }
             break;
+        case cmd_streamer::transmitter_state::waiting_for_feed_ack:
+            if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(20)) > 0)
+            {
+                cmd_streamer::validate_response(cmd_streamer::transmitter_state::execute_auto_trigger_macro);
+            }
+            else
+            {
+                if ((xTaskGetTickCount() - cmd_streamer::waiting_start_time) > pdMS_TO_TICKS(1000))
+                {
+                    cmd_streamer::timeouts++;
+                    cmd_streamer::state = cmd_streamer::transmitter_state::ready;
+                }
+            }
+            break;
+        case cmd_streamer::transmitter_state::execute_auto_trigger_macro:
+        {
+            size_t len = strlen(cmd_streamer::auto_trigger_exec_ptr);
+            HAL_UART_Transmit_IT(&huart2, reinterpret_cast<const uint8_t*>(cmd_streamer::auto_trigger_exec_ptr), len);
+            CDC_Transmit_FS(const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(cmd_streamer::auto_trigger_exec_ptr)), len);
+            cmd_streamer::state = cmd_streamer::transmitter_state::waiting_for_jog_ack;
+            break;
+        }
         }
         vTaskDelayUntil(&last_wake, delay);
         pwdt->last_time = xTaskGetTickCount();

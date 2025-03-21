@@ -140,7 +140,7 @@ void user_main(wdt::task_t* pwdt)
         //Rapid feed override
         if (fast) s.speed = nvs::get_rapid_speed(a);
 
-        display::set_axis_state(a, s.enabled ? jog_state : display::state::idle, s.direction, s.speed);
+        display::set_axis_state(a, s.jog_enabled ? jog_state : display::state::idle, s.direction, s.speed);
 
         cmd_streamer::set_axis_state(a, &s);
     }

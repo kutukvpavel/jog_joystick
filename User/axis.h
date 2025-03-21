@@ -9,15 +9,14 @@ namespace axis
     enum class types
     {
         x,
-        y,
-        z,
-        a,
 
         LEN
     };
     struct state
     {
-        bool enabled;
+        bool jog_enabled;
+        bool trigger_auto_pos;
+        bool trigger_auto_neg;
         bool direction;
         float speed;
     };

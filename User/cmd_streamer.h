@@ -11,7 +11,9 @@ namespace cmd_streamer
     enum class transmitter_state
     {
         ready,
-        waiting_for_ack
+        waiting_for_jog_ack,
+        waiting_for_feed_ack,
+        execute_auto_trigger_macro
     };
     
     HAL_StatusTypeDef set_axis_state(axis::types t, const axis::state *s);
