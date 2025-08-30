@@ -1,5 +1,8 @@
 Warning: works only on "unofficial" 128k-flash devices (linker script tweaked!).
 
+Flashing:
+With stlink = leave jumpers be, they don't matter.
+
 Joystick DB9 pinout:
 1 = Fast
 2 = X-

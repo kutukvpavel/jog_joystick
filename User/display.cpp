@@ -4,6 +4,9 @@
 #include "wdt.h"
 #include "LCD/LiquidCrystal_PCF8574.h"
 
+//#define DISPLAY_I2C_ADDR 0b01111110 //Used on my lathe (...8574A)
+#define DISPLAY_I2C_ADDR 0b01001110 //Used on my mill (HLF8574)
+
 namespace display
 {
     struct display_data
@@ -21,7 +24,7 @@ namespace display
     static display_data data[TOTAL_AXES] = { };
     static SemaphoreHandle_t data_mutex = NULL;
     static StaticSemaphore_t data_mutex_buffer;
-    static LiquidCrystal_PCF8574* lcd = new LiquidCrystal_PCF8574(0b01111110);
+    static LiquidCrystal_PCF8574* lcd = new LiquidCrystal_PCF8574(DISPLAY_I2C_ADDR);
 
     void init()
     {
