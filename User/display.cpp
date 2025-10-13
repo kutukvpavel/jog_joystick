@@ -64,7 +64,8 @@ namespace display
     {
         const size_t field_len = (line_buffer_length - 1) / TOTAL_AXES;
         static_assert(field_len == 5); //Change following line if field length changes:
-        const char speed_format[] = "%4.1f ";
+        const char speed_format[] = "%4.2f ";
+        const char rapid_format[] = "%4.1f ";
         const char state_idle[field_len + 1] = "     ";
         const char state_jog_n[field_len + 1] = "  -  ";
         const char state_jog_p[field_len + 1] = "  +  ";
@@ -75,7 +76,7 @@ namespace display
 
         for (size_t i = 0; i < TOTAL_AXES; i++)
         {
-            snprintf(speed_buffer + field_len * i, field_len + 1, speed_format, data[i].speed);
+            snprintf(speed_buffer + field_len * i, field_len + 1, (data[i].speed >= 10.0f) ? rapid_format : speed_format, data[i].speed);
             const char* state_designator;
             switch (data[i].s)
             {
