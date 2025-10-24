@@ -131,6 +131,7 @@ void user_main(wdt::task_t* pwdt)
 
     bool fast = axis::get_fast();
     display::state jog_state = fast ? display::state::jog_fast : display::state::jog;
+    cmd_streamer::set_fast_jog(fast);
 
     for (size_t i = 0; i < static_cast<size_t>(axis::types::LEN); i++)
     {

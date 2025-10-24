@@ -15,6 +15,7 @@ namespace cmd_streamer
     };
     
     HAL_StatusTypeDef set_axis_state(axis::types t, const axis::state *s);
+    HAL_StatusTypeDef set_fast_jog(bool enabled);
 
     float get_axis_jog_speed(axis::types t);
     uint32_t get_error_count();

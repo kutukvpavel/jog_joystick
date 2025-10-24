@@ -92,6 +92,7 @@ namespace cmd_streamer
     static uint32_t error_responses = 0;
     static uint32_t ok_responses = 0;
     static uint32_t timeouts = 0;
+    static bool is_fast_jog = false;
 
     HAL_StatusTypeDef init()
     {
@@ -145,7 +146,7 @@ namespace cmd_streamer
             if (a.jog_speed != 0)
             {
                 total_feed_rate += a.jog_speed * a.jog_speed;
-                a.jog_step = a.jog_speed * (TAU_MS / 1000);
+                a.jog_step = a.jog_speed * (is_fast_jog ? (TAU_MS / 1000) : (2 * TAU_MS / 1000));
                 active = true;
             }
             else
@@ -153,6 +154,7 @@ namespace cmd_streamer
                 a.jog_step = 0;
             }
         }
+        bool allow_cancel_jog = !is_fast_jog;
 
         xSemaphoreGive(mutex_handle);
 
@@ -176,7 +178,7 @@ namespace cmd_streamer
             state = transmitter_state::waiting_for_ack;
             if (!prev_active) use_full_delay = false; //Shorten first delay between jog commands
         }
-        else if (prev_active) //Abort jog
+        else if (prev_active && allow_cancel_jog) //Abort jog
         {
             transmit_ptr = cancel_buffer;
         }
@@ -190,6 +192,17 @@ namespace cmd_streamer
         }
 
         return use_full_delay;
+    }
+
+    HAL_StatusTypeDef set_fast_jog(bool enabled)
+    {
+        while (xSemaphoreTake(mutex_handle, portMAX_DELAY) != pdTRUE);
+
+        if (is_fast_jog && !enabled) ;
+        is_fast_jog = enabled;
+
+        xSemaphoreGive(mutex_handle);
+        return HAL_OK;
     }
 
     HAL_StatusTypeDef set_axis_state(axis::types t, const axis::state *s)
@@ -216,7 +229,7 @@ _BEGIN_STD_C
 STATIC_TASK_BODY(MY_IO)
 {
     const TickType_t delay = pdMS_TO_TICKS(TAU_MS);
-    const TickType_t first_delay = delay / 2;
+    const TickType_t first_delay = delay / 5;
     static wdt::task_t* pwdt;
     static TickType_t last_wake;
     static bool use_full_delay = true;
