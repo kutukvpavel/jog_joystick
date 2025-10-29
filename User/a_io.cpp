@@ -38,7 +38,7 @@ namespace a_io
         DBG("A_IO init...");
         for (size_t i = 0; i < in::LEN; i++)
         {
-            ch[i].a = new average(50);
+            ch[i].a = new average(70);
         }
         HAL_ADCEx_Calibration_Start(&hadc1);
         //Here sizeof()-magic is not intended to compute array size, ignore the warning

@@ -9,7 +9,7 @@
 #define MY_NVS_I2C_ADDR(mem_addr) (MY_EEPROM_ADDR | ((mem_addr & 0x700) >> 7))
 #define MY_NVS_VER_ADDR 0u
 #define MY_NVS_START_ADDRESS 8u
-#define MY_NVS_VERSION 4u
+#define MY_NVS_VERSION 5u
 #define MY_NVS_PAGE_SIZE 8u
 #define MY_NVS_TOTAL_PAGES 64u
 #define MY_NVS_TOTAL_SIZE (MY_NVS_PAGE_SIZE * MY_NVS_TOTAL_PAGES)
@@ -29,6 +29,7 @@ namespace nvs
         float max_feed_rate[TOTAL_AXES];
         float min_feed_rate[TOTAL_AXES];
         float pot_low_threshold;
+        float exponential_factor;
     };
     static storage_t storage = {
         .rapid_feed_rate = {
@@ -40,7 +41,8 @@ namespace nvs
         .min_feed_rate = {
             0.1, 0.1, 0.1, 0.1
         },
-        .pot_low_threshold = 0.02
+        .pot_low_threshold = 0.02,
+        .exponential_factor = 0.01f
     };
 
     static storage_preamble_t preamble = {};
@@ -249,5 +251,14 @@ namespace nvs
     void set_low_pot_threshold(float v)
     {
         storage.pot_low_threshold = v;
+    }
+
+    float get_exponential_factor()
+    {
+        return storage.exponential_factor;
+    }
+    void set_exponential_factor(float v)
+    {
+        storage.exponential_factor = v;
     }
 } // namespace nvs

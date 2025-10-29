@@ -27,4 +27,7 @@ namespace nvs
 
     float get_low_pot_threshold();
     void set_low_pot_threshold(float v);
+
+    float get_exponential_factor();
+    void set_exponential_factor(float v);
 } // namespace nvs

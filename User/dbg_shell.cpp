@@ -148,6 +148,7 @@ namespace cli_commands
             printf("\t\t%c: %f\n", axis_letters[i], nvs::get_min_speed(static_cast<axis::types>(i)));
         }
         printf("\tPot low threshold: %f\n", nvs::get_low_pot_threshold());
+        printf("\tExponential k factor: %f\n", nvs::get_exponential_factor());
         
         return 0;
     }
@@ -196,6 +197,15 @@ namespace cli_commands
         nvs::set_low_pot_threshold(threshold);
         return 0;
     }
+    uint8_t set_exponential_factor(int argc, char** argv)
+    {
+        if (argc < 2) return 1;
+        float factor;
+        if (sscanf(argv[1], "%f", &factor) != 1) return 2;
+        if (factor < 0.01f || factor > 10) return 3;
+        nvs::set_exponential_factor(factor);
+        return 0;
+    }
 } // namespace cli_commands
 
 void init()
@@ -232,4 +242,6 @@ void init()
         &cli_commands::set_min_speed);
     CLI_ADD_CMD("set_pot_low", "Set potentiometer blanking distance from 0 (to suppress uneven region near track end)", 
         &cli_commands::set_pot_low);
+    CLI_ADD_CMD("set_exp_factor", "Set potentiometer mapping exponential factor (0.01 = almost linear, >0.1 = exponential)", 
+        &cli_commands::set_exponential_factor);
 }

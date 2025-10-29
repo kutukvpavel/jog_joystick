@@ -3,6 +3,8 @@
 #include "a_io.h"
 #include "nvs.h"
 
+#include <math.h>
+
 namespace axis
 {
     struct debouncer
@@ -52,11 +54,13 @@ namespace axis
             .speed_input = a_io::in::a_speed
         }
     };
-    static float mapping_k = 1;
+    static float low_threshold_multiplier = 1;
+    static float exponential_law_multiplier = 1;
 
     void init()
     {
-        mapping_k = 1.0f / (1.0f - nvs::get_low_pot_threshold());
+        low_threshold_multiplier = 1.0f / (1.0f - nvs::get_low_pot_threshold());
+        exponential_law_multiplier = 1.0f / (expf(nvs::get_exponential_factor()) - 1.0f);
     }
 
     void debounce(bool* now, bool* last, uint32_t* debouncer)
@@ -87,8 +91,9 @@ namespace axis
 
         bool n = LL_GPIO_IsInputPinSet(i->port_n, i->pin_n) > 0;
         bool p = LL_GPIO_IsInputPinSet(i->port_p, i->pin_p) > 0;
-        float multiplier = mapping_k * (a_io::get_input(i->speed_input) - nvs::get_low_pot_threshold());
+        float multiplier = low_threshold_multiplier * (a_io::get_input(i->speed_input) - nvs::get_low_pot_threshold());
         if (multiplier < 0) multiplier = 0;
+        multiplier = (expf(nvs::get_exponential_factor() * multiplier) - 1.0f) * exponential_law_multiplier;
 
         res.enabled = (n != p);
         res.direction = p && !n;
